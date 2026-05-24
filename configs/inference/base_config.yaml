@@ -1,0 +1,63 @@
+# ============ Shared Settings ============
+input: data/scannet_v2_test_part/val
+
+# Global flip method selector
+global_flip_method: miqp  # m2 | vote | miqp
+
+# M1 Model (always required)
+models:
+  m1:
+    checkpoint: experiment_sota/SceneNN_part_iterative_multiscale_bs16_mixupdirect_orientation_multiscale_20260103_164959/checkpoints/best_checkpoint.pth
+    config: configs/direct_orientation/iptv3.yaml
+
+  # ============ M2-only Settings ============
+  # Only used when global_flip_method: m2
+  m2:
+    config: configs/global_flip/base_config.yaml
+    checkpoint: experiments/sceneNN_encoder_max_global_flip_transformer_20260103_115442_finish/checkpoints/best_checkpoint.pth
+
+# Patch extraction
+patch_extraction:
+  method: fps_bfs
+  patch_count: null
+  max_points_per_patch: 2000
+  overlap_rate: 0.5
+
+# Inference settings
+inference:
+  grid_size: 0.02
+  pca_max_nn: 10
+  device: cuda
+  save_patches: false
+  save_patches_filter: 
+    min_error_rate: 0.2
+  overwrite: true
+  batch_size: 64
+  visualize_graphs: false
+
+# M1 iterative refinement
+iterative:
+  num_iterations: 3
+  use_confidence: true
+
+# ============ M2-only Settings ============
+# Only used when global_flip_method: m2
+m2_iterative:
+  enabled: false
+  num_iterations: 1
+
+# ============ Optimization-only Settings ============
+# Only used when global_flip_method: vote | miqp
+optimization:
+  method: miqp  # vote | miqp
+  vote_iterations: 10
+  miqp_server_host: 192.168.8.19
+  miqp_server_port: 12345
+  miqp_timeout: 3000.0
+
+edge_consistency:
+  enabled: True        
+  mode: edgenet
+  checkpoint: experiments/SceneNN_onscannet_edge_consistency_mlp_20260110_232050_finish/checkpoints/best_checkpoint.pth                 # Path to EdgeNet checkpoint
+  config: configs/global_flip/edge_consistency/base_config.yaml 
+  k: 10  

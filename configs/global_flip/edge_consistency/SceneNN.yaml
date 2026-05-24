@@ -1,0 +1,23 @@
+# Edge Consistency MLP Configuration
+base_config_url: configs/global_flip/edge_consistency/base_config.yaml
+feat_extraction_config: configs/global_flip/feat_extra/SceneNN_fps_overlap2_big_i.yaml 
+
+
+# 数据配置
+data:
+  root: data/SceneNN_part
+  train:
+    subfolder: train
+    batch_size: 16
+    num_workers: 4
+    shuffle: false
+  val:
+    subfolder: test
+    batch_size: 32
+    num_workers: 4
+    shuffle: false
+  test:
+    subfolder: test
+    batch_size: 32
+    num_workers: 4
+    shuffle: false

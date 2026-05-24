@@ -1,0 +1,67 @@
+# Inherit from base configuration
+base_config_url: configs/direct_orientation/iterative_multiscale.yaml
+
+# Mixup Configuration
+mixup:
+  enabled: true
+
+# Multi-Scale Patch Extraction Configuration
+patch_extraction:
+  scales:
+    - max_points_per_patch: 2000
+      method: fps
+      k: 10
+      patch_count: null
+      overlap_rate: 0.0
+
+    - max_points_per_patch: 10000
+      method: fps
+      k: 10
+      patch_count: null
+      overlap_rate: 0.0
+
+    - max_points_per_patch: 40000
+      method: fps
+      k: 10
+      patch_count: null
+      overlap_rate: 0.0
+
+    - max_points_per_patch: 20000
+      method: fps
+      k: null
+      patch_count: null
+      overlap_rate: 0.0
+
+    - max_points_per_patch: 5000
+      method: fps
+      k: 10
+      patch_count: null
+      overlap_rate: 0.0
+
+# Data Configuration
+data:
+  root: data/SceneNN_part
+  train:
+    subfolder: train
+    batch_size: 32
+    num_workers: 4
+    shuffle: true
+
+  val:
+    subfolder: val
+    batch_size: 32
+    num_workers: 4
+  test:
+    subfolder: test
+    batch_size: 16
+    num_workers: 4
+
+# Training Configuration
+training:
+  lr: 1e-5
+  optimizer: adamw
+  lr_scheduler:
+    type: 'step'      # Options: cosine, step, plateau
+    step_size: 30       # for step scheduler
+    gamma: 0.5          # for step scheduler
+  # eval_freq: 5

@@ -1,0 +1,13 @@
+# Socket-based DACPO Configuration
+
+socket:
+  host: localhost
+  port: 8999
+  timeout: 300.0
+  max_concurrent: 20  # Maximum concurrent connections for async mode
+
+dacpo:
+  num_query_points: 200
+  sampling_method: fps
+  knn_k: 30
+  num_per_patch: 30000

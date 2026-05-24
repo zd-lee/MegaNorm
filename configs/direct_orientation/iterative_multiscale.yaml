@@ -1,0 +1,218 @@
+# Multi-Scale Direct Orientation Prediction Configuration
+# 多尺度直接方向预测配置文件 - PTv3 + MLP with multi-scale patches
+
+# PTv3 Backbone Configuration (same as iterative.yaml)
+backbone:
+  in_channels: 7 # Input features (3 coords + 3 normals + 1 confidence)
+
+  # Encoder configuration
+  enc_channels:
+  - 32
+  - 64
+  - 128
+  - 256
+  - 512
+  enc_depths:
+  - 2
+  - 2
+  - 2
+  - 6
+  - 2
+  enc_num_head:
+  - 2
+  - 4
+  - 8
+  - 16
+  - 32
+  enc_patch_size:
+  - 1024
+  - 1024
+  - 1024
+  - 1024
+  - 1024
+
+  # Decoder configuration
+  dec_channels:
+  - 512  # Output dimension (backbone feature dim)
+  - 256
+  - 128
+  - 64
+  dec_depths:
+  - 2
+  - 2
+  - 2
+  - 2
+  dec_num_head:
+  - 4
+  - 4
+  - 8
+  - 16
+  dec_patch_size:
+  - 1024
+  - 1024
+  - 1024
+  - 1024
+
+  # Other configurations
+  stride:
+  - 2
+  - 2
+  - 2
+  - 2
+  order: z
+  enable_flash: true
+  enable_rpe: false
+  upcast_attention: false
+  upcast_softmax: false
+  cls_mode: false
+
+  # Regularization and optimization
+  mlp_ratio: 4
+  qkv_bias: true
+  qk_scale: null
+  attn_drop: 0.0
+  proj_drop: 0.0
+  drop_path: 0.3
+  pre_norm: true
+  shuffle_orders: true
+
+# MLP Head Configuration
+mlp_head:
+  hidden_dim: 256      # Hidden dimension for MLP layers
+  num_layers: 3        # Number of MLP layers (including output layer)
+  dropout: 0.1         # Dropout rate
+
+# Iterative Configuration
+iterative:
+  num_iterations: 3
+  use_confidence: true  # Use confidence as input feature
+
+
+# Mixup Configuration
+mixup:
+  enabled: false
+
+# Multi-Scale Patch Extraction Configuration
+patch_extraction:
+  scales:
+    - max_points_per_patch: 10000
+      method: fps
+      k: 10
+      patch_count: null
+      overlap_rate: 0.0
+
+    - max_points_per_patch: 80000
+      method: fps
+      k: 10
+      patch_count: null
+      overlap_rate: 0.0
+
+    - max_points_per_patch: 30000
+      method: fps
+      k: null
+      patch_count: null
+      overlap_rate: 0.0
+
+# Data Configuration
+data:
+  root: data/t2_training_with_normals
+  train:
+    subfolder: train
+    batch_size: 1
+    grid_size: 0.02
+    max_points: 300000
+    num_workers: 4
+    shuffle: true
+    pca_max_nn: 10
+    augmentation:
+      random_rotation:
+        enabled: false
+        max_angle: 180
+        axes: 'xyz'
+
+  val:
+    subfolder: val
+    batch_size: 1
+    grid_size: 0.02
+    max_points: 300000
+    num_workers: 4
+    shuffle: false
+    pca_max_nn: 30
+    augmentation:
+      random_rotation:
+        enabled: false
+
+  test:
+    subfolder: test
+    batch_size: 1
+    grid_size: 0.02
+    max_points: 300000
+    num_workers: 4
+    shuffle: false
+    pca_max_nn: 30
+    augmentation:
+      random_rotation:
+        enabled: false
+
+# Training Configuration
+training:
+  epochs: 500
+  lr: 1e-5
+  optimizer: adamw
+  weight_decay: 0.0001  # 1e-4
+  lr_scheduler:
+    type: 'step'      # Options: cosine, step, plateau
+    eta_min: 1e-6       # for cosine scheduler
+    step_size: 50       # for step scheduler
+    gamma: 0.5          # for step scheduler
+    patience: 10        # for plateau scheduler
+    factor: 0.5         # for plateau scheduler
+
+  # Loss Configuration
+  loss:
+    type: flip_focal        # ce, focal, or weighted_ce
+    alpha: 0.25
+    gamma: 2.0
+
+  # Mixup Configuration
+  mixup:
+    enabled: false
+
+  # Other training parameters
+  grad_clip_norm: 10.0
+  log_freq: 50
+  eval_freq: 5
+  save_freq: 10
+  visualization_freq: 50  # Save visualization every N training batches
+
+# Debugging Configuration
+debugging:
+  nan_detection:
+    enabled: true
+    check_parameters_after_update: true
+    log_stats_frequency: 50
+    raise_on_nan: false  # Set to true to stop training on NaN
+
+# Experiment Configuration
+experiment:
+  name: direct_orientation_multiscale
+  output_dir: outputs_direct_orientation_multiscale
+  checkpoint_dir: checkpoints
+  log_dir: logs
+  resume: null
+  seed: 42
+
+# Inference Configuration
+inference:
+  batch_size: 1
+  num_workers: 4
+
+# Device Configuration
+device: cuda
+gpu_ids:
+- 0
+
+# Other
+distributed: false
+debug: false
+profile: false

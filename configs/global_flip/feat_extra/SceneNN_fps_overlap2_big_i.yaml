@@ -1,0 +1,43 @@
+# Patch提取配置 预计算时使用
+patch_extraction:
+  scales:
+    - max_points_per_patch: 10000
+      method: fps
+      k: null
+      patch_count: null
+      overlap_rate: 0.5
+
+    - max_points_per_patch: 20000
+      method: fps
+      k: 10
+      patch_count: null
+      overlap_rate: 0.5
+
+    - max_points_per_patch: 40000
+      method: fps
+      k: 10
+      patch_count: null
+      overlap_rate: 0.5
+
+
+
+# Backbone配置（已训练好的模型）
+backbone:
+  checkpoint: experiment_sota/SceneNN_part_iterative_multiscale_bs16_mixupdirect_orientation_multiscale_20260103_164959/checkpoints/best_checkpoint.pth
+  config: configs/direct_orientation/iptv3.yaml
+
+# Patch Iterative Configuration (for precompute stage)
+patch_iterative:
+  num_iterations: 3
+  use_confidence: True
+
+# Feature extraction settings - 使用encoder特征 + 平均池化
+feature_extraction:
+  use_encoder_features: true   # 使用encoder底层特征（较高分辨率）
+  pooling_method: max    
+
+# M2 Iterative Configuration (for training stage)
+# M2 训练阶段的patch级别迭代配置 - 单尺度不启用
+m2_iterative:
+  enabled: false  # 不提取inv_features，特征格式为(P, 512)
+  num_iterations: 1
