@@ -1,0 +1,39 @@
+input: data/t2_maxpart
+
+models:
+  patchnet:
+    checkpoint: pl_logs/SceneNN_part_iterative_multiscale_bs16_mixup/version_2/checkpoints/val_best-epoch=044-val/acc_val=0.9837.ckpt
+    config: configs/direct_orientation/iptv3.yaml
+  edgenet:
+    checkpoint: experiments/scenenn_train_scannet_val_pl_edge_consistency_mlp_20260617_002702_finish/checkpoints/latest_checkpoint.pth
+    config: configs/global_flip/edge_consistency/scenenn_train_scannet_val_pl.yaml
+
+patch_extraction:
+  method: fps_bfs
+  patch_count: null
+  max_points_per_patch: 20000
+  overlap_rate: 0.0
+  k: 10
+
+inference:
+  grid_size: 0.02
+  pca_max_nn: 10
+  device: cuda
+  overwrite: true
+  batch_size: 1
+  save_patches: false
+
+iterative:
+  num_iterations: 3
+  use_confidence: true
+
+edge_consistency:
+  k: 10
+
+optimization:
+  method: miqp
+  max_iterations: 20
+  time_limit: 300.0
+  miqp_server_host: 192.168.8.19
+  miqp_server_port: 12345
+  miqp_timeout: 3000.0

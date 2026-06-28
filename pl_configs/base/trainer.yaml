@@ -1,0 +1,39 @@
+seed_everything: 42
+
+trainer:
+  accelerator: gpu
+  strategy: ddp_find_unused_parameters_true
+  devices: auto
+  max_epochs: 500
+  check_val_every_n_epoch: 5
+  limit_val_batches: 0.1
+  gradient_clip_val: null
+  gradient_clip_algorithm: null
+
+  logger:
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: pl_logs
+      name: experiment
+
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        monitor: val/acc_val
+        mode: max
+        save_top_k: 3
+        every_n_epochs: 5
+        filename: "val_best-{epoch:03d}-{val/acc_val:.4f}"
+
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        monitor: train/loss
+        mode: min
+        save_top_k: 5
+        every_n_epochs: 1
+        filename: "train_best-{epoch:03d}-{train/loss:.4f}"
+        save_last: "link"
+
+    - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: epoch

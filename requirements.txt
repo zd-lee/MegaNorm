@@ -1,0 +1,16 @@
+torch==2.5.0
+torchvision==0.20.0
+torch-scatter
+torch-cluster
+spconv-cu124
+open3d
+plyfile
+timm
+tensorboard
+lightning
+pandas
+scikit-learn
+scipy
+pyyaml
+tqdm
+addict

@@ -1,0 +1,44 @@
+model:
+  class_path: pl_wrapper.module.DirectOrientationModule
+  init_args:
+    backbone:
+      in_channels: 7
+      enc_channels: [32, 64, 128, 256, 512]
+      enc_depths: [2, 2, 2, 6, 2]
+      enc_num_head: [2, 4, 8, 16, 32]
+      enc_patch_size: [1024, 1024, 1024, 1024, 1024]
+      dec_channels: [512, 256, 128, 64]
+      dec_depths: [2, 2, 2, 2]
+      dec_num_head: [4, 4, 8, 16]
+      dec_patch_size: [1024, 1024, 1024, 1024]
+      stride: [2, 2, 2, 2]
+      order: z
+      enable_flash: true
+      enable_rpe: false
+      upcast_attention: false
+      upcast_softmax: false
+      cls_mode: false
+      mlp_ratio: 4
+      qkv_bias: true
+      qk_scale: null
+      attn_drop: 0.0
+      proj_drop: 0.0
+      drop_path: 0.3
+      pre_norm: true
+      shuffle_orders: true
+
+    mlp_head:
+      hidden_dim: 256
+      num_layers: 3
+      dropout: 0.1
+
+    iterative:
+      num_iterations: 3
+      use_confidence: true
+
+    loss_params:
+      loss_type: flip_focal
+      alpha: 0.25
+      gamma: 2.0
+
+    grad_clip_norm: 10.0

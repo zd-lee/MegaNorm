@@ -1,0 +1,36 @@
+input: data/SceneNN_part/test
+
+models:
+  patchnet:
+    checkpoint: checkpoints/patchnet_scenenn.pth
+    config: configs/direct_orientation/iptv3.yaml
+  edgenet:
+    checkpoint: checkpoints/edgenet_scenenn.pth
+    config: configs/global_flip/edge_consistency/base_config.yaml
+
+patch_extraction:
+  method: fps_bfs
+  patch_count: null
+  max_points_per_patch: 20000
+  overlap_rate: 0.0
+  k: 10
+
+inference:
+  grid_size: 0.02
+  pca_max_nn: 10
+  device: cuda
+  overwrite: true
+  batch_size: 4
+  save_patches: false
+
+iterative:
+  num_iterations: 3
+  use_confidence: true
+
+edge_consistency:
+  k: 10
+
+optimization:
+  method: greedy
+  max_iterations: 20
+  time_limit: 300.0

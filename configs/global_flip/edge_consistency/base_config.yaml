@@ -1,0 +1,53 @@
+feat_extraction_config: null
+
+graph:
+  k: 10
+
+model:
+  input_dim: 512
+  hidden_dims: [512, 128]
+  dropout: 0.0
+  use_bn: true
+  use_pos_encoding: true
+
+data:
+  root: data/SceneNN_part
+  train:
+    subfolder: train
+    batch_size: 16
+    num_workers: 4
+    shuffle: true
+  val:
+    subfolder: val
+    batch_size: 32
+    num_workers: 4
+    shuffle: false
+  test:
+    subfolder: val
+    batch_size: 32
+    num_workers: 4
+    shuffle: false
+
+training:
+  epochs: 200
+  lr: 1e-5
+  optimizer: adamw
+  weight_decay: 0.01
+  lr_scheduler:
+    type: cosine
+    eta_min: 1e-6
+  grad_clip_norm: 1.0
+  log_freq: 10
+  eval_freq: 1
+  save_freq: 20
+  loss:
+    type: bce
+
+experiment:
+  name: edge_consistency_mlp
+  output_dir: outputs_edge_consistency
+  checkpoint_dir: checkpoints
+  log_dir: logs
+  seed: 42
+
+device: cuda

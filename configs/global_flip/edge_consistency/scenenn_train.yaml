@@ -1,0 +1,37 @@
+base_config_url: configs/global_flip/edge_consistency/base_config.yaml
+feat_extraction_config: configs/global_flip/feat_extra/scenenn_train_v453_fps_bfs_inv_aug_rot_ds.yaml
+
+data:
+  root: data/SceneNN_part
+  train:
+    subfolder: train_augmented
+    batch_size: 16
+    num_workers: 4
+    shuffle: true
+  val:
+    subfolder: val
+    batch_size: 32
+    num_workers: 4
+    shuffle: false
+  test:
+    subfolder: val
+    batch_size: 32
+    num_workers: 4
+    shuffle: false
+
+graph:
+  k: 5
+
+model:
+  dropout: 0.0
+
+training:
+  epochs: 1000
+  save_freq: 100
+
+experiment:
+  name: edge_consistency_mlp
+  output_dir: outputs_edge_consistency
+  checkpoint_dir: checkpoints
+  log_dir: logs
+  seed: 42

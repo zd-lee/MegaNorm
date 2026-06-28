@@ -1,0 +1,48 @@
+backbone:
+  checkpoint: pl_logs/SceneNN_part_iterative_multiscale_bs16_mixup/version_453/checkpoints/val_best-epoch=029-val/acc_val=0.9886.ckpt
+  config: configs/direct_orientation/iptv3.yaml
+
+patch_extraction:
+  scales:
+    - max_points_per_patch: 2000
+      method: fps_bfs
+      k: 10
+      patch_count: null
+      overlap_rate: 0.0
+    - max_points_per_patch: 10000
+      method: fps_bfs
+      k: 10
+      patch_count: null
+      overlap_rate: 0.0
+    - max_points_per_patch: 40000
+      method: fps_bfs
+      k: 10
+      patch_count: null
+      overlap_rate: 0.0
+    - max_points_per_patch: 20000
+      method: fps_bfs
+      k: null
+      patch_count: null
+      overlap_rate: 0.0
+    - max_points_per_patch: 5000
+      method: fps_bfs
+      k: 10
+      patch_count: null
+      overlap_rate: 0.0
+
+patch_iterative:
+  num_iterations: 3
+  use_confidence: true
+
+feature_extraction:
+  use_encoder_features: true
+  pooling_method: max
+
+use_inverse_features: false
+
+augmentation:
+  enabled: true
+  rotations_z_deg: [0, 10, 20]
+  downsample_rates: [1.0, 0.5, 0.2, 0.1]
+  source_subfolder: train
+  output_subfolder: train_augmented

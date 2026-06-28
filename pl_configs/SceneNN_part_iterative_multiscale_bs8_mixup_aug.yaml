@@ -1,0 +1,67 @@
+base_configs:
+  - pl_configs/base/trainer.yaml
+  - pl_configs/base/confi_ptv3_model.yaml
+  - pl_configs/base/optimizer_step.yaml
+
+model:
+  init_args:
+    iterative:
+      use_mixup: true
+
+trainer:
+  use_distributed_sampler: false
+
+data:
+  class_path: pl_wrapper.data.DirectOrientationDataModule
+  init_args:
+    root: data/SceneNN_part
+    train_subfolder: train
+    val_subfolder: val
+    test_subfolder: test
+    batch_size: 8
+    num_workers: 4
+    grid_size: 0.02
+    pca_max_nn_train: 10
+    pca_max_nn_val: 30
+    pca_max_nn_test: 30
+    train_largest_first_epoch0: true
+    train_shuffle_after_epoch0: true
+    train_augmentation:
+      random_rotation:
+        enabled: true
+        max_angle: 15
+        axes: xyz
+      random_downsample:
+        enabled: true
+        min_ratio: 0.2
+        min_pts: 100
+      gaussian_noise:
+        enabled: true
+        mean: 0.0
+        max_std: 0.008
+    scales:
+      - max_points_per_patch: 2000
+        method: fps_bfs
+        k: 10
+        patch_count: null
+        overlap_rate: 0.0
+      - max_points_per_patch: 10000
+        method: fps_bfs
+        k: 10
+        patch_count: null
+        overlap_rate: 0.0
+      - max_points_per_patch: 40000
+        method: fps_bfs
+        k: 10
+        patch_count: null
+        overlap_rate: 0.0
+      - max_points_per_patch: 20000
+        method: fps_bfs
+        k: null
+        patch_count: null
+        overlap_rate: 0.0
+      - max_points_per_patch: 5000
+        method: fps_bfs
+        k: 10
+        patch_count: null
+        overlap_rate: 0.0
