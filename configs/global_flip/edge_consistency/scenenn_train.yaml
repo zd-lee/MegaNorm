@@ -1,5 +1,5 @@
 base_config_url: configs/global_flip/edge_consistency/base_config.yaml
-feat_extraction_config: configs/global_flip/feat_extra/scenenn_train_v453_fps_bfs_inv_aug_rot_ds.yaml
+feat_extraction_config: configs/global_flip/feat_extra/scenenn_train.yaml
 
 data:
   root: data/SceneNN_part

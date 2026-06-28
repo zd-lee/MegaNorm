@@ -1,5 +1,9 @@
 # MegaNorm
 
+This repository is the official implementation of **MegaNorm: Local Patch
+Embeddings for Efficient and Robust Point Normal Orientation at Super-Large
+Scale**.
+
 MegaNorm orients point-cloud normals with a local-to-global pipeline. It first orients normals inside independent local patches with a self-conditioning Point Transformer V3 model, then predicts pairwise patch consistency with EdgeNet and solves patch flips globally.
 
 ## Algorithm
@@ -124,3 +128,17 @@ energy difference from Gurobi on matched instances.
 | T2 scale=2 | 2 | Gurobi socket | OK | 6090.806073 | 58.182655 | 2.609 | 0 |
 | T2 scale=2 | 2 | OR-Tools CP-SAT | FEASIBLE/OPTIMAL | 6090.806073 | 58.182655 | 84.029 | 0 |
 | T2 scale=2 | 2 | SCIP/PySCIPOpt | optimal | 6090.806073 | 58.182655 | 340.560 | 0 |
+
+## Citation
+
+If you use MegaNorm in your research, please cite:
+
+```bibtex
+@inproceedings{li2026meganorm,
+  title={MegaNorm: Local Patch Embeddings for Efficient and Robust Point Normal Orientation at Super-Large Scale},
+  author={Li, Zhuodong and Liu, Zengke and Hou, Fei and Chen, Xuhui and Wang, Wencheng and He, Ying},
+  booktitle={SIGGRAPH Conference Papers},
+  year={2026},
+  note={11 pages}
+}
+```

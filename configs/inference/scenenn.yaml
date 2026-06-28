@@ -6,7 +6,7 @@ models:
     config: configs/direct_orientation/iptv3.yaml
   edgenet:
     checkpoint: run_logs/infer_current_inv_e1000/best_epoch601_snapshot.pth
-    config: configs/global_flip/edge_consistency/scenenn_train_v453_fps_bfs_inv_e1000.yaml
+    config: configs/global_flip/edge_consistency/scenenn_train.yaml
 
 patch_extraction:
   method: fps_bfs
