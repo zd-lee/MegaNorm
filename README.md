@@ -37,49 +37,43 @@ point-cloud normals at large scale.
 
 ## Quick Start
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>1. Environment</h3>
+### 1. Environment
 
-<pre><code>conda create -n meganorm python=3.12 -y
+```bash
+conda create -n meganorm python=3.12 -y
 conda activate meganorm
 
 pip install torch==2.5.0 torchvision==0.20.0 --index-url https://download.pytorch.org/whl/cu124
 pip install torch-scatter torch-cluster -f https://data.pyg.org/whl/torch-2.5.0+cu124.html
-pip install -r requirements.txt</code></pre>
+pip install -r requirements.txt
+```
 
-  </td>
-  <td width="50%" valign="top">
-    <h3>2. Native Patch Ops</h3>
+### 2. Native Patch Ops
 
-<pre><code>python cpp_alg/setup.py build_ext --inplace</code></pre>
+```bash
+python cpp_alg/setup.py build_ext --inplace
+```
 
-  </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>3. Checkpoints</h3>
-      <p>Download weights from Hugging Face:</p>
-      <p><a href="https://huggingface.co/wlbbbbb/meganorm/tree/main/checkpoints">huggingface.co/wlbbbbb/meganorm/checkpoints</a></p>
+### 3. Checkpoints
 
-<pre><code>checkpoints/
+Download weights from Hugging Face:
+[huggingface.co/wlbbbbb/meganorm/checkpoints](https://huggingface.co/wlbbbbb/meganorm/tree/main/checkpoints)
+
+```text
+checkpoints/
   patchnet_scenenn.pth
-  edgenet_scenenn.pth</code></pre>
+  edgenet_scenenn.pth
+```
 
-    </td>
-    <td width="50%" valign="top">
-      <h3>4. Run Inference</h3>
+### 4. Run Inference
 
-<pre><code>python inference/infer_unified.py \
+```bash
+python inference/infer_unified.py \
   --config configs/inference/base_config.yaml \
   --input path/to/input.ply \
   --output outputs/inference/example \
-  --gpu 0</code></pre>
-
-    </td>
-  </tr>
-</table>
+  --gpu 0
+```
 
 ## Pipeline
 
@@ -97,33 +91,30 @@ pip install -r requirements.txt</code></pre>
 
 ## Inference Recipes
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>Single Point Cloud</h3>
-      <p>Edit <code>configs/inference/base_config.yaml</code> to change checkpoints, patch extraction, optimization, and runtime settings.</p>
+### Single Point Cloud
 
-<pre><code>python inference/infer_unified.py \
+Edit `configs/inference/base_config.yaml` to change checkpoints, patch extraction,
+optimization, and runtime settings.
+
+```bash
+python inference/infer_unified.py \
   --config configs/inference/base_config.yaml \
   --input path/to/input.ply \
   --output outputs/inference/example \
-  --gpu 0</code></pre>
+  --gpu 0
+```
 
-    </td>
-    <td width="50%" valign="top">
-      <h3>ScanNet-Style Folder</h3>
+### ScanNet-Style Folder
 
-<pre><code>python inference/infer_unified.py \
+```bash
+python inference/infer_unified.py \
   --config configs/inference/scannet_v2.yaml \
   --input path/to/scans \
   --input-mode scan_root \
   --pattern '*_raw_pointcloud.ply' \
   --output outputs/inference/scannet \
-  --gpu 0</code></pre>
-
-    </td>
-  </tr>
-</table>
+  --gpu 0
+```
 
 ## PatchNet with `main.py`
 
@@ -131,33 +122,28 @@ pip install -r requirements.txt</code></pre>
 `fit`, `validate`, `test`, and `predict`, and it merges `base_configs` declared
 inside configs under `pl_configs/`.
 
-<table>
-  <tr>
-    <td width="33%" valign="top">
-      <h3>Train</h3>
+### Train
 
-<pre><code>python main.py fit \
-  --config pl_configs/SceneNN_part_iterative_multiscale_bs8_mixup_aug.yaml</code></pre>
+```bash
+python main.py fit \
+  --config pl_configs/SceneNN_part_iterative_multiscale_bs8_mixup_aug.yaml
+```
 
-    </td>
-    <td width="33%" valign="top">
-      <h3>Test</h3>
+### Test
 
-<pre><code>python main.py test \
+```bash
+python main.py test \
   --config pl_configs/SceneNN_part_iterative_multiscale_bs8_mixup_aug.yaml \
-  --ckpt_path checkpoints/patchnet_scenenn.pth</code></pre>
+  --ckpt_path checkpoints/patchnet_scenenn.pth
+```
 
-    </td>
-    <td width="33%" valign="top">
-      <h3>Predict</h3>
+### Predict
 
-<pre><code>python main.py predict \
+```bash
+python main.py predict \
   --config pl_configs/SceneNN_part_iterative_multiscale_bs8_mixup_aug.yaml \
-  --ckpt_path checkpoints/patchnet_scenenn.pth</code></pre>
-
-    </td>
-  </tr>
-</table>
+  --ckpt_path checkpoints/patchnet_scenenn.pth
+```
 
 <details>
 <summary><b>Common command-line overrides</b></summary>
@@ -177,47 +163,37 @@ Logs are written to `pl_logs/`. Checkpoint behavior is controlled by the
 
 ## Training Data
 
-<table>
-  <tr>
-    <td width="45%" valign="top">
-      <h3>Expected Layout</h3>
+### Expected Layout
 
-<pre><code>data/SceneNN_part/
+```text
+data/SceneNN_part/
   train/*.ply
   val/*.ply
-  test/*.ply</code></pre>
+  test/*.ply
+```
 
-    </td>
-    <td width="55%" valign="top">
-      <h3>File Requirements</h3>
-      <p>Training PLY files should contain point coordinates and ground-truth normals.</p>
-    </td>
-  </tr>
-</table>
+### File Requirements
+
+Training PLY files should contain point coordinates and ground-truth normals.
 
 ## EdgeNet Training
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>1. Precompute Features</h3>
+### 1. Precompute Features
 
-<pre><code>python dataset/precompute_patch_features_multiscale.py \
+```bash
+python dataset/precompute_patch_features_multiscale.py \
   --config configs/global_flip/feat_extra/scenenn_train.yaml \
   --gpu 0 \
-  --split train,val,test</code></pre>
+  --split train,val,test
+```
 
-    </td>
-    <td width="50%" valign="top">
-      <h3>2. Train EdgeNet</h3>
+### 2. Train EdgeNet
 
-<pre><code>python train_edge_consistency.py \
+```bash
+python train_edge_consistency.py \
   --config configs/global_flip/edge_consistency/scenenn_train.yaml \
-  --gpu 0</code></pre>
-
-    </td>
-  </tr>
-</table>
+  --gpu 0
+```
 
 ## Solver Notes
 
