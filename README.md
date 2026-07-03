@@ -1,19 +1,11 @@
 # MegaNorm
 
-This repository is the official implementation of **MegaNorm: Local Patch
-Embeddings for Efficient and Robust Point Normal Orientation at Super-Large
-Scale**.
+Official implementation of **MegaNorm: Local Patch Embeddings for Efficient and
+Robust Point Normal Orientation at Super-Large Scale**.
 
-MegaNorm orients point-cloud normals with a local-to-global pipeline. It first orients normals inside independent local patches with a self-conditioning Point Transformer V3 model, then predicts pairwise patch consistency with EdgeNet and solves patch flips globally.
-
-## Algorithm
-
-1. Split the point cloud into patches with FPS and connected-component splitting.
-2. Estimate initial unoriented normals with PCA.
-3. Run PatchNet for three self-conditioning iterations on `[xyz, normal, confidence]` features.
-4. Pool PatchNet patch features and build a kNN graph over patch centers.
-5. Run EdgeNet on neighboring patch pairs to predict same/opposite orientation scores.
-6. Optimize one binary flip variable per patch and write the final oriented normals.
+MegaNorm orients point-cloud normals with a local-to-global pipeline: PatchNet
+orients normals inside local patches, EdgeNet predicts pairwise patch
+consistency, and a global flip optimization produces the final oriented normals.
 
 ## Installation
 
@@ -22,7 +14,7 @@ conda create -n meganorm python=3.12 -y
 conda activate meganorm
 pip install torch==2.5.0 torchvision==0.20.0 --index-url https://download.pytorch.org/whl/cu124
 pip install torch-scatter torch-cluster -f https://data.pyg.org/whl/torch-2.5.0+cu124.html
-pip install spconv-cu124 open3d plyfile timm tensorboard pandas scikit-learn scipy pyyaml tqdm addict
+pip install -r requirements.txt
 ```
 
 Build the C++ patch utilities:
@@ -31,55 +23,25 @@ Build the C++ patch utilities:
 python cpp_alg/setup.py build_ext --inplace
 ```
 
-## Data Layout
-Use PLY files with point coordinates and ground-truth normals for supervised training:
+## Pretrained Weights
+
+Download pretrained weights from Hugging Face:
 
 ```text
-data/SceneNN_part/
-  train/*.ply
-  val/*.ply
-  test/*.ply
-```
-## Train PatchNet
-
-```bash
-python train_direct_orientation_i.py \
-  --config configs/direct_orientation/SceneNN_part_iterative_multiscale_bs16_mixup.yaml \
-  --gpu 0
+https://huggingface.co/wlbbbbb/meganorm/tree/main/checkpoints
 ```
 
-Evaluate a checkpoint:
+Put them under `checkpoints/`. The default inference config expects:
 
-```bash
-python train_direct_orientation_i.py \
-  --config configs/direct_orientation/SceneNN_part_iterative_multiscale_bs16_mixup.yaml \
-  --resume checkpoints/patchnet_scenenn.pth \
-  --gpu 0 \
-  --test
-```
-
-## Train EdgeNet
-
-First precompute patch features with a trained PatchNet checkpoint configured in `configs/global_flip/feat_extra/SceneNN_fps_overlap2_big_i.yaml`:
-
-```bash
-python dataset/precompute_patch_features_multiscale.py \
-  --config configs/global_flip/feat_extra/SceneNN_fps_overlap2_big_i.yaml \
-  --gpu 0 \
-  --split train,val,test
-```
-
-Then train EdgeNet:
-
-```bash
-python train_edge_consistency.py \
-  --config configs/global_flip/edge_consistency/SceneNN.yaml \
-  --gpu 0
+```text
+checkpoints/patchnet_scenenn.pth
+checkpoints/edgenet_scenenn.pth
 ```
 
 ## Inference
 
-Set checkpoint paths in `configs/inference/base_config.yaml`, then run:
+For the full MegaNorm pipeline, edit checkpoint paths and options in
+`configs/inference/base_config.yaml`, then run:
 
 ```bash
 python inference/infer_unified.py \
@@ -89,11 +51,11 @@ python inference/infer_unified.py \
   --gpu 0
 ```
 
-Batch ScanNet-style root:
+For a ScanNet-style directory:
 
 ```bash
 python inference/infer_unified.py \
-  --config configs/inference/base_config.yaml \
+  --config configs/inference/scannet_v2.yaml \
   --input path/to/scans \
   --input-mode scan_root \
   --pattern '*_raw_pointcloud.ply' \
@@ -101,37 +63,82 @@ python inference/infer_unified.py \
   --gpu 0
 ```
 
-## Optimizer Notes
+## Data Layout
 
-The global patch flip step is a binary XOR optimization over EdgeNet same/opposite
-edge scores. The experiments in the paper use Gurobi for this step. For easier
-reproduction without a commercial solver, we also tested two open-source Python
-solver interfaces on exported patch-level instances: OR-Tools CP-SAT and
-SCIP/PySCIPOpt. On these test cases, both open-source solvers reached the same
-optimized edge energies as Gurobi, but they were slower on larger instances.
+Training expects PLY files with point coordinates and ground-truth normals:
 
-`Mean Delta GT` is the mean optimized edge energy minus the energy obtained by
-the ground-truth flip labels under the same predicted EdgeNet edge objective.
-This value can be positive because the EdgeNet-predicted weights are not always
-perfectly aligned with the ground-truth flip labels. Higher optimized energy is
-better for the predicted objective. `Max Diff vs Gurobi` is the maximum absolute
-energy difference from Gurobi on matched instances.
+```text
+data/SceneNN_part/
+  train/*.ply
+  val/*.ply
+  test/*.ply
+```
 
-| Dataset | Cases | Solver | Status | Mean Energy | Mean Delta GT | Mean Solve (s) | Max Diff vs Gurobi |
-| --- | ---: | --- | --- | ---: | ---: | ---: | ---: |
-| SceneNN scale=2 | 15 | Gurobi socket | OK | 154.212816 | 13.319571 | 1.288 | 0 |
-| SceneNN scale=2 | 15 | OR-Tools CP-SAT | OPTIMAL | 154.212816 | 13.319571 | 1.144 | 0 |
-| SceneNN scale=2 | 15 | SCIP/PySCIPOpt | optimal | 154.212816 | 13.319571 | 2.854 | 0 |
-| ScanNetV2 scale=0 | 30 | Gurobi socket | OK | 783.736960 | 3.411295 | 1.492 | 0 |
-| ScanNetV2 scale=0 | 30 | OR-Tools CP-SAT | OPTIMAL | 783.736960 | 3.411295 | 0.369 | 0 |
-| ScanNetV2 scale=0 | 30 | SCIP/PySCIPOpt | optimal | 783.736960 | 3.411295 | 1.429 | 0 |
-| T2 scale=2 | 2 | Gurobi socket | OK | 6090.806073 | 58.182655 | 2.609 | 0 |
-| T2 scale=2 | 2 | OR-Tools CP-SAT | FEASIBLE/OPTIMAL | 6090.806073 | 58.182655 | 84.029 | 0 |
-| T2 scale=2 | 2 | SCIP/PySCIPOpt | optimal | 6090.806073 | 58.182655 | 340.560 | 0 |
+## `main.py` Usage
+
+`main.py` is the LightningCLI entry point for PatchNet training, evaluation, and
+prediction. It loads configs from `pl_configs/` and supports `base_configs`
+merging, so `pl_configs/SceneNN_part_iterative_multiscale_bs8_mixup_aug.yaml`
+inherits the trainer, model, optimizer, and scheduler defaults from
+`pl_configs/base/`.
+
+Train PatchNet:
+
+```bash
+python main.py fit \
+  --config pl_configs/SceneNN_part_iterative_multiscale_bs8_mixup_aug.yaml
+```
+
+Test a checkpoint:
+
+```bash
+python main.py test \
+  --config pl_configs/SceneNN_part_iterative_multiscale_bs8_mixup_aug.yaml \
+  --ckpt_path checkpoints/patchnet_scenenn.pth
+```
+
+Run PatchNet prediction on the config's test split:
+
+```bash
+python main.py predict \
+  --config pl_configs/SceneNN_part_iterative_multiscale_bs8_mixup_aug.yaml \
+  --ckpt_path checkpoints/patchnet_scenenn.pth
+```
+
+Common overrides can be passed directly on the command line:
+
+```bash
+python main.py fit \
+  --config pl_configs/SceneNN_part_iterative_multiscale_bs8_mixup_aug.yaml \
+  --trainer.devices 1 \
+  --data.init_args.root data/SceneNN_part \
+  --data.init_args.batch_size 4
+```
+
+Logs are written to `pl_logs/`; checkpoints are written according to the
+`trainer.callbacks` section in the active config.
+
+## Train EdgeNet
+
+First precompute patch features with a trained PatchNet checkpoint configured in
+`configs/global_flip/feat_extra/scenenn_train.yaml`:
+
+```bash
+python dataset/precompute_patch_features_multiscale.py \
+  --config configs/global_flip/feat_extra/scenenn_train.yaml \
+  --gpu 0 \
+  --split train,val,test
+```
+
+Then train EdgeNet:
+
+```bash
+python train_edge_consistency.py \
+  --config configs/global_flip/edge_consistency/scenenn_train.yaml \
+  --gpu 0
+```
 
 ## Citation
-
-If you use MegaNorm in your research, please cite:
 
 ```bibtex
 @inproceedings{li2026meganorm,
