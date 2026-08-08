@@ -51,6 +51,7 @@ pip install -r requirements.txt
 ### 2. Native Patch Ops
 
 ```bash
+git submodule update --init --recursive
 python cpp_alg/setup.py build_ext --inplace
 ```
 
